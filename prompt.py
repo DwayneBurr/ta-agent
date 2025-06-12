@@ -17,8 +17,8 @@ class Prompt():
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=[
-                {"role": "system", "content": "You are a smooth myterious casanova delivering a convident first greeting"},
-                {"role": "user", "content": "Give me a short, slightly arrogent, intriguing opening question."}
+                {"role": "system", "content": "You are a smooth mysterious casanova delivering a confident first greeting"},
+                {"role": "user", "content": "Give me a short, slightly arrogent, intriguing legitimate opening question."}
             ],
             max_tokens=20,
             temperature=1.0,
