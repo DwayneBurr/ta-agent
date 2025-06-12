@@ -1,4 +1,5 @@
 import os
+import sys
 from dotenv import load_dotenv
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
@@ -7,15 +8,17 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
 
+from prompt import Prompt
+
 load_dotenv()  # Load from .env file
 
-api_key = os.getenv("OPENAI_API_KEY")
 phone_number = os.getenv("PHONE_NUMBER")
 
 class TinderAgent():
     def __init__(self):
         self.driver = webdriver.Chrome()
         self.wait = WebDriverWait(self.driver, 5)
+        self.prompt = Prompt()
 
     def login(self):
         self.driver.get("https://www.tinder.com")
@@ -46,7 +49,7 @@ class TinderAgent():
             allow_location = self.wait.until(EC.element_to_be_clickable((By.XPATH, "//div[contains(text(), 'Allow')]")))
             allow_location.click()
         except:
-            print("Didnt ask to allow location")
+            print("ask to allow location")
 
         try:
             miss_notifications = self.wait.until(EC.element_to_be_clickable((By.XPATH, "//*[contains(text(), 'I’ll give it a miss')]")))
@@ -76,14 +79,21 @@ class TinderAgent():
         # swipe_left.click()
 
     def auto_swiper(self):
+        time.sleep(1)
+        self.maybe_later()
         while True:
-            time.sleep(2)
-            print("sleep before sswipe")
+            time.sleep(0.2)
+            print("sleep before swipe")
             try:
                 self.swipe_right()
                 print("swiping right")
+
+                if self.is_match_popup():
+                    self.handle_match_popup()
+                    continue
                 self.reject_add_to_homescreen()
                 self.get_matches()
+                # self.close_offer()
             except Exception as e:
                 print(f"failed to swipe right: {e}")
 
@@ -101,26 +111,60 @@ class TinderAgent():
 
         self.driver.quit()
 
-    # def close_match(self):
-    #     try:
-    #     # close the match if you get one
-    #         close_match = self.wait.until(
-    #             EC.element_to_be_clickable((By.XPATH, "//div[contains(text(), '')]"))
-    #         )
-    #         close_match.click()
-    #         print("closing match to continue swiping")
-    #     except Exception as e:
-    #         print(f"Failed to close match: {e}")
+    def close_offer(self):
+        print("trying to close offer")
+        try:
+        # close the offer if you get one
+            close_button = self.wait.until(EC.element_to_be_clickable((By.XPATH, "//button[.//span[text()='Close']]")))
+            close_button.click()
+            print("closing offer can no longer continue")
+            sys.exit(1)
+        except Exception as e:
+            print(f"Failed to close offer or was no offer: {e}")
+
+    def is_match_popup(self):
+        try:
+            match_popup = self.driver.find_element(By.XPATH, "//div[contains(text(), \"It's a Match!\")]")
+            return match_popup.is_displayed()
+        except:
+            return False
+        
+    def handle_match_popup(self):
+        print("Handling match popup...")
+        
+        try:
+            # Try clicking “Keep Swiping” or “Send a Message”
+            keep_swiping_btn = self.driver.find_element(By.XPATH, "//button[.//span[contains(text(), 'Keep Swiping')]]")
+            keep_swiping_btn.click()
+            print("Clicked Keep Swiping")
+        except Exception as e:
+            print(f"Could not handle match popup: {e}")
+
+            
 
     def get_matches(self):
+        print("attempting to write prompt to match")
         try:
             new_match_msg = self.wait.until(EC.presence_of_element_located(
                 (By.XPATH, "//textarea[@placeholder='Say something nice!']")
             ))
-            new_match_msg.send_keys("Hello, nice to meet you!")
+            random_prompt = self.prompt.get_random_prompt()
+            new_match_msg.send_keys(random_prompt)
             new_match_msg.send_keys(Keys.RETURN)
         except Exception as e:
             print(f"couldnt send a message: {e}")
+
+    def maybe_later(self):
+        print("trying to click maybe later for matches that like you")
+        try:
+            maybe_later = self.wait.until(EC.presence_of_element_located(
+                (By.XPATH, "//button[.//div[normalize-space(text())='Maybe later']]")
+            ))
+            self.wait.until(EC.element_to_be_clickable((By.XPATH, "//button[.//div[normalize-space(text())='Maybe later']]")))
+            maybe_later.click()
+        except Exception as e:
+            print(f"maybe later not clicked: {e}")
+
 
 def main():
     agent = TinderAgent()
@@ -129,6 +173,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-    # <textarea placeholder="Say something nice!" maxlength="5000" class="P(8px) Fx($flx1) As(c) Typs(body-1-regular) Rsz(n) Px(16px) Py(8px)" id="q237454470" style="height: 40px !important;"></textarea>
