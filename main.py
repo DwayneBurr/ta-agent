@@ -6,6 +6,9 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+import undetected_chromedriver as uc
+
+
 import time
 
 from prompt import Prompt
@@ -16,7 +19,7 @@ phone_number = os.getenv("PHONE_NUMBER")
 
 class TinderAgent():
     def __init__(self):
-        self.driver = webdriver.Chrome()
+        self.driver = uc.Chrome()
         self.wait = WebDriverWait(self.driver, 5)
         self.prompt = Prompt()
 

@@ -15,12 +15,12 @@ class Prompt():
 
     def generate_prompt(self):
         response = client.chat.completions.create(
-            model="gpt-4o",
+            model="gpt-4.1-nano",
             messages=[
-                {"role": "system", "content": "You are a smooth mysterious casanova delivering a confident first greeting"},
-                {"role": "user", "content": "Give me a short, slightly arrogent, intriguing legitimate opening question."}
+                {"role": "system", "content": "You are Frank reynolds from always sunny in philadelphia sending a first message after matching on tinder and being as stupid and sleazy as possible in less than 25 words"},
+                {"role": "user", "content": "Frank Reynolds billionaire lives with charlie eats catfood and bangs hoors. Also goes as Mantis toboggan M.D and accidently drops his monster condom which he uses for his magnum dong"}
             ],
-            max_tokens=20,
+            max_tokens=30,
             temperature=1.0,
         )
 
@@ -37,4 +37,3 @@ class Prompt():
 # Example usage
 prompt_generator = Prompt()
 print(prompt_generator.generate_prompt())
-print(prompt_generator.get_random_prompt())
